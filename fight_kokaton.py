@@ -147,7 +147,7 @@ class Score:
         """
         self.score = 0
         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
-        self.color = (0, 0, 255)
+        self.color = (0, 0, 255) #青色に設定している
         self.img = self.fonto.render("スコア: 0", 0, self.color)
         self.rct = self.img.get_rect()
         self.rct.center = (100, HEIGHT - 50)
@@ -206,7 +206,7 @@ def main():
             beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
-        score.update(screen)  # スコアを画面に描画
+        score.update(screen)   #スコアを画面に描画
         pg.display.update()
         tmr += 1
         clock.tick(50)
