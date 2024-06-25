@@ -83,7 +83,8 @@ class Bird:
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = __class__.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
- 
+
+
 class Beam:
     """
     こうかとんが放つビームに関するクラス
@@ -95,22 +96,18 @@ class Beam:
         """
         self.img = pg.image.load(f"fig/beam.png")
         self.rct = self.img.get_rect()
-        self.rct.centery = bird.rct.centery  # こうかとんの中心縦座標
-        self.rct.left = bird.rct.right  # こうかとんの右座標をビーム座標に設定
+        self.rct.centery = bird.rct.centery #こうかとんの中心縦座標
+        self.rct.left = bird.rct.right #こうかとんの右座標をビーム座標に設定
         self.vx, self.vy = +5, 0
 
     def update(self, screen: pg.Surface):
         """
         ビームを速度ベクトルself.vx, self.vyに基づき移動させる
-        画面の範囲外に出たらリストから削除
         引数 screen：画面Surface
         """
         if check_bound(self.rct) == (True, True):
             self.rct.move_ip(self.vx, self.vy)
-            screen.blit(self.img, self.rct)
-        else:
-            return False  # 画面外に出たらFalseを返す
-        return True   
+            screen.blit(self.img, self.rct)    
 
 
 class Bomb:
@@ -164,10 +161,10 @@ class Score:
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))
+    screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
-    beams = []  # Beamインスタンスのリストを空で初期化
+    beams = []  # Beamインスタンスを複数扱うための空のリストを作る
     score = Score()  # Scoreインスタンスを生成
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
@@ -178,7 +175,7 @@ def main():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beams.append(Beam(bird))  # Beamインスタンスをリストに追加
+                beams.append(Beam(bird))  # ビームインスタンスを生成し，リストに追加
 
         screen.blit(bg_img, [0, 0])
 
@@ -191,32 +188,28 @@ def main():
                 time.sleep(5)
                 return
 
-        # Beamの更新と範囲外のビームをリストから削除
-        for beam in beams[:]:
-            if not beam.update(screen):
-                beams.remove(beam)  # 画面外に出たらリストから削除
-
-        # 爆弾とビームの衝突判定
         for i in range(len(bombs)):
-            for beam in beams[:]:
-                if bombs[i].rct.colliderect(beam.rct):
-                    bombs[i] = None
-                    beams.remove(beam)
-                    bird.change_img(6, screen)
-                    score.score += 1  # スコアを1点増加
+            for j in range(len(beams)):
+                if beams[j] is not None and bombs[i] is not None:
+                    if bombs[i].rct.colliderect(beams[j].rct):
+                        bombs[i] = None
+                        beams[j] = None
+                        bird.change_img(6, screen)
+                        score.score += 1  # スコアを1点増加
 
         bombs = [bomb for bomb in bombs if bomb is not None]
+        beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        score.update(screen)  # スコアを画面に描画
+        for beam in beams:
+            beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
-
+        score.update(screen)  # スコアを画面に描画
         pg.display.update()
         tmr += 1
         clock.tick(50)
-
 
 if __name__ == "__main__":
     pg.init()
